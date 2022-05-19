@@ -24,7 +24,7 @@ class OTPController extends Controller
                 'from'=>$number,
                 'body'=>"here is OTP ".$randomNumber." ".$todayDate
             ]);
-            $token = $user->createToken($user->email.'_Token')->plainTextToken;
+            // $token = $user->createToken($user->email.'_Token')->plainTextToken;
             return response()->json([
                 'status'=>'200',
                 'message' =>"Message sent"
