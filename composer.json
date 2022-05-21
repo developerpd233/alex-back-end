@@ -6,6 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^7.3|^8.0",
+        "cloudinary-labs/cloudinary-laravel": "^1.0",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
         "laravel/framework": "^8.75",
@@ -15,6 +16,7 @@
         "laravel/ui": "^3.4",
         "livewire/livewire": "^2.5",
         "nesbot/carbon": "^2.58",
+        "paragonie/sodium_compat": "^1.17",
         "twilio/sdk": "^6.37"
     },
     "require-dev": {
