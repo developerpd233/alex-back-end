@@ -15,6 +15,27 @@ class AuthController extends Controller
     public function signup(Request $request){
 
         try {
+            $user = User::where('phone', $request->phone)->first();
+            if(isset($user->user_id)){
+                $OTP = random_int(1000, 9999);
+                $account_sid = env('TWILIO_SID');
+                $account_token = env('TWILIO_TOKEN');
+                $number = env('TWILIO_FROM');
+                $client = new Client($account_sid,$account_token);
+                $client->messages->create($request->phone,[
+                    'from'=>$number,
+                    'body'=>"here is OTP ".$OTP
+                ]);
+
+            User::where('user_id',$user->user_id)->update([
+                'OTP' => $OTP
+            ]);
+                return response()->json([
+                    "status"=> "200",
+                    "user"=>$user->JWT,
+                    "message"=>"user exists"
+                ]);
+            }else{
             $OTP = random_int(1000, 9999);
             $account_sid = env('TWILIO_SID');
             $account_token = env('TWILIO_TOKEN');
@@ -24,26 +45,24 @@ class AuthController extends Controller
                 'from'=>$number,
                 'body'=>"here is OTP ".$OTP
             ]);
-            $user_rand = random_int(100, 999);
-            $user_id=$user_rand.$request->phone.$user_rand;
-            $profile=Profile::create([
-                'phone'=>$request->phone,
-                'user_id'=>$user_id
-            ]);
-
-            $token = $profile->createToken('token')->plainTextToken;
             
             $user=User::create([
                 'phone'=>$request->phone,
-                'JWT'=>$token,
-                'user_id'=>$user_id,
                 'OTP'=>$OTP
             ]);
-            
-            $user=Image_upload::create([
+            $profile = User::where('phone', $request->phone)->first();
+            $token = $user->createToken($profile->phone.$profile->user_id.'_Token')->plainTextToken;
+            User::where('user_id',$profile->user_id)->update([
+                'JWT' => $token
+            ]);
+            Profile::create([
+                'phone'=>$request->phone,
+                'user_id'=>$profile->user_id
+            ]);
+           
+            Image_upload::create([
                 'image_url'=>'https://res.cloudinary.com/alex-project/image/upload/v1653127578/Images/r8fb9weiqlitnz8fddtg.png',
-                'JWT'=>$token,
-                'user_id'=>$user_id,
+                'user_id'=>$profile->user_id
             ]);
             
             return response()->json([
@@ -52,6 +71,7 @@ class AuthController extends Controller
                 'message'=>"User Registered and OTP sent"
                 
             ]);
+        }
     
         } catch(\Exception $e){
             return $e->getMessage();
@@ -59,27 +79,27 @@ class AuthController extends Controller
 
         }
 
-    public function user_exist(Request $request){
-            try {
-            $user = User::where('phone', $request->phone)->first();
+    // public function user_exist(Request $request){
+    //         try {
+    //         $user = User::where('phone', $request->phone)->first();
     
-            if (!$user) {
-                return response()->json([
-                    'status'=>'200',
-                    'message' =>'user not found'
-                ]);
-            }
-            else{
-                return response()->json([
-                    'status'=>'401',
-                    'username'=> $user,
-                    'message' => 'user already exists'
-                ]);
-            }
-        } catch(\Exception $e){
-            return $e->getMessage();
-        }
-    }
+    //         if (!$user) {
+    //             return response()->json([
+    //                 'status'=>'200',
+    //                 'message' =>'user not found'
+    //             ]);
+    //         }
+    //         else{
+    //             return response()->json([
+    //                 'status'=>'401',
+    //                 'username'=> $user,
+    //                 'message' => 'user already exists'
+    //             ]);
+    //         }
+    //     } catch(\Exception $e){
+    //         return $e->getMessage();
+    //     }
+    // }
 }
 // public function signin(Request $request){
     //     $user = User::where('phone', $request->phone)->first();
