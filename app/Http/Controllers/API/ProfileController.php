@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Profile;
 use App\Models\User;
+use App\Models\Alarm;
+
 
 class ProfileController extends Controller
 {
@@ -28,7 +30,10 @@ class ProfileController extends Controller
             }
           
         } catch(\Exception $e){
-            return $e->getMessage();
+            return response()->json([
+                'status'=>403,
+                'message'=> $e->getMessage()
+            ]);
         }
         
     }
@@ -37,9 +42,12 @@ class ProfileController extends Controller
             $user = User::where('JWT', $request->JWT)->first();
             if(isset($user->user_id)){
 
-                $project = Profile::where('user_id', $user->user_id)->update([
+                Profile::where('user_id', $user->user_id)->update([
                     'name' => $request->name,
                     'about' => $request->about
+                ]);
+                Alarm::where('user_id', $user->user_id)->update([
+                    'user' => $request->name
                 ]);
                 return response()->json([
                     'status'=>'200',
@@ -52,7 +60,10 @@ class ProfileController extends Controller
                 ]);
             }
         } catch(\Exception $e){
-            return $e->getMessage();
+            return response()->json([
+                'status'=>403,
+                'message'=> $e->getMessage()
+            ]);
         }
         
     }

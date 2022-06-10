@@ -15,8 +15,28 @@ class AuthController extends Controller
     public function signup(Request $request){
 
         try {
-            $user = User::where('phone', $request->phone)->first();
-            if(isset($user->user_id)){
+            if($request->phone != ""){
+                $user = User::where('phone', $request->phone)->first();
+                if(isset($user->user_id)){
+                    $OTP = random_int(1000, 9999);
+                    $account_sid = env('TWILIO_SID');
+                    $account_token = env('TWILIO_TOKEN');
+                    $number = env('TWILIO_FROM');
+                    $client = new Client($account_sid,$account_token);
+                    $client->messages->create($request->phone,[
+                        'from'=>$number,
+                        'body'=>"here is OTP ".$OTP
+                    ]);
+
+                User::where('user_id',$user->user_id)->update([
+                    'OTP' => $OTP
+                ]);
+                    return response()->json([
+                        "status"=> "200",
+                        "user"=>$user->JWT,
+                        "message"=>"user exists"
+                    ]);
+                }else{
                 $OTP = random_int(1000, 9999);
                 $account_sid = env('TWILIO_SID');
                 $account_token = env('TWILIO_TOKEN');
@@ -26,58 +46,68 @@ class AuthController extends Controller
                     'from'=>$number,
                     'body'=>"here is OTP ".$OTP
                 ]);
-
-            User::where('user_id',$user->user_id)->update([
-                'OTP' => $OTP
-            ]);
+                
+                $user=User::create([
+                    'phone'=>$request->phone,
+                    'OTP'=>$OTP
+                ]);
+                $profile = User::where('phone', $request->phone)->first();
+                $token = $user->createToken($profile->phone.$profile->user_id.'_Token')->plainTextToken;
+                User::where('user_id',$profile->user_id)->update([
+                    'JWT' => $token
+                ]);
+                Profile::create([
+                    'phone'=>$request->phone,
+                    'user_id'=>$profile->user_id
+                ]);
+            
+                Image_upload::create([
+                    'image_url'=>'https://res.cloudinary.com/alex-project/image/upload/v1653127578/Images/r8fb9weiqlitnz8fddtg.png',
+                    'user_id'=>$profile->user_id
+                ]);
+                
                 return response()->json([
-                    "status"=> "200",
-                    "user"=>$user->JWT,
-                    "message"=>"user exists"
+                    'status'=>200,
+                    'JWT'=>$token,
+                    'message'=>"User Registered and OTP sent"
+                    
+                ]);
+                }
+            }else{
+                return response()->json([
+                    'status'=>400,
+                    'message'=> "number can't be empty"
+                ]);
+            }
+        } catch(\Exception $e){
+            return response()->json([
+                'status'=>403,
+                'message'=> $e->getMessage()
+            ]);
+        }
+
+    }
+     public function allUsers(){
+            try {
+            $user = User::all();
+            if($user != ""){
+                return response()->json([
+                    'status'=>'200',
+                    'users' =>$user
                 ]);
             }else{
-            $OTP = random_int(1000, 9999);
-            $account_sid = env('TWILIO_SID');
-            $account_token = env('TWILIO_TOKEN');
-            $number = env('TWILIO_FROM');
-            $client = new Client($account_sid,$account_token);
-            $client->messages->create($request->phone,[
-                'from'=>$number,
-                'body'=>"here is OTP ".$OTP
-            ]);
-            
-            $user=User::create([
-                'phone'=>$request->phone,
-                'OTP'=>$OTP
-            ]);
-            $profile = User::where('phone', $request->phone)->first();
-            $token = $user->createToken($profile->phone.$profile->user_id.'_Token')->plainTextToken;
-            User::where('user_id',$profile->user_id)->update([
-                'JWT' => $token
-            ]);
-            Profile::create([
-                'phone'=>$request->phone,
-                'user_id'=>$profile->user_id
-            ]);
-           
-            Image_upload::create([
-                'image_url'=>'https://res.cloudinary.com/alex-project/image/upload/v1653127578/Images/r8fb9weiqlitnz8fddtg.png',
-                'user_id'=>$profile->user_id
-            ]);
-            
-            return response()->json([
-                'status'=>200,
-                'JWT'=>$token,
-                'message'=>"User Registered and OTP sent"
-                
-            ]);
-        }
-    
-        } catch(\Exception $e){
-            return $e->getMessage();
-        }
-
-        }
+                return response()->json([
+                    'status'=>'404',
+                    'users' =>"no user found"
+                ]);
+            }
+            } catch(\Exception $e){
+                return response()->json([
+                    'status'=>403,
+                    'message'=> $e->getMessage()
+                ]);
+            }
+    }
 
     // public function user_exist(Request $request){
     //         try {

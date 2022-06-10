@@ -13,7 +13,6 @@ class ImageController extends Controller
 {
     public function image_upload(Request $request){
         try {
-
             $uploadedFileUrl = Cloudinary::upload($request->file('file')->getRealPath(),['folder'=> 'Images'])->getSecurePath();
             Image_upload::create([
                 'image_url'=>$uploadedFileUrl 
@@ -24,7 +23,10 @@ class ImageController extends Controller
             ]);
     
         } catch(\Exception $e){
-            return $e->getMessage();
+            return response()->json([
+                'status'=>403,
+                'message'=> $e->getMessage()
+            ]);
         }
         
     }
@@ -41,14 +43,17 @@ class ImageController extends Controller
                 'status'=>'200',
                 'message' =>"Image has been updated"
             ]);
-        }else{
-            return response()->json([
-                'status'=>'200',
-                'message' =>"Unable to update image invalid token"
-            ]);
-        }
+            }else{
+                return response()->json([
+                    'status'=>'401',
+                    'message' =>"Unable to update image invalid token"
+                ]);
+            }
         } catch(\Exception $e){
-            return $e->getMessage();
+            return response()->json([
+                'status'=>403,
+                'message'=> $e->getMessage()
+            ]);
         }
         
     }

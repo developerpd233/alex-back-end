@@ -19,24 +19,27 @@ class OTPController extends Controller
                 $OTP = User::where('OTP', $request->OTP)->first();
                 if(isset($OTP)){
                     return response()->json([
-                        'status'=>'200',
+                        'status'=>200,
                         'message' =>"Valid OTP"
                     ]);
                 }else{
                     return response()->json([
-                        'status'=>'200',
+                        'status'=>403,
                         'message' =>"Invalid OTP"
                     ]);
                 }
               
             }else{
                 return response()->json([
-                    'status'=>'401',
+                    'status'=>401,
                     'message' =>"Invalid Token"
                 ]);
             }
         } catch(\Exception $e){
-            return $e->getMessage();
+            return response()->json([
+                'status'=>400,
+                'message'=> $e->getMessage()
+            ]);
         }
         
     }
@@ -58,42 +61,48 @@ class OTPController extends Controller
                     'OTP' => $OTP
                 ]);
                 return response()->json([
-                    'status'=>'200',
+                    'status'=>200,
                     'message' =>"OTP resend"
                 ]);
             }else{
                 return response()->json([
-                    'status'=>'200',
+                    'status'=>401,
                     'message' =>"Invalid token"
                 ]);
             }
         } catch(\Exception $e){
-            return $e->getMessage();
+            return response()->json([
+                'status'=>400,
+                'message'=> $e->getMessage()
+            ]);
         }
         
     }
-    // public function authOtp(Request $request){
-    //     try {
+    public function authOtp(Request $request){
+        try {
 
-    //         $randomNumber = random_int(1000, 9999);
-    //         $account_sid = env('TWILIO_SID');
-    //         $account_token = env('TWILIO_TOKEN');
-    //         $number = env('TWILIO_FROM');
+            $randomNumber = random_int(1000, 9999);
+            $account_sid = env('TWILIO_SID');
+            $account_token = env('TWILIO_TOKEN');
+            $number = env('TWILIO_FROM');
     
-    //         $client = new Client($account_sid,$account_token);
-    //         $client->messages->create($request->phone,[
-    //             'from'=>$number,
-    //             'body'=>"here is OTP ".$randomNumber
-    //         ]);
-    //         return response()->json([
-    //             'status'=>'200',
-    //             'message' =>"Message sent"
-    //         ]);
+            $client = new Client($account_sid,$account_token);
+            $client->messages->create($request->phone,[
+                'from'=>$number,
+                'body'=>"here is OTP ".$randomNumber
+            ]);
+            return response()->json([
+                'status'=>200,
+                'message' =>"Message sent"
+            ]);
     
-    //     } catch(\Exception $e){
-    //         return $e->getMessage();
-    //     }
+        } catch(\Exception $e){
+            return response()->json([
+                'status'=>400,
+                'message'=> $e->getMessage()
+            ]);
+        }
         
-    // }
+    }
     
 }
