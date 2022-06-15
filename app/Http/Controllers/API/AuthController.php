@@ -61,11 +61,10 @@ class AuthController extends Controller
                     'user_id'=>$profile->user_id
                 ]);
             
-                Image_upload::create([
-                    'image_url'=>'https://res.cloudinary.com/alex-project/image/upload/v1653127578/Images/r8fb9weiqlitnz8fddtg.png',
-                    'user_id'=>$profile->user_id
-                ]);
-                
+                // Image_upload::create([
+                //     'image_url'=>'https://res.cloudinary.com/alex-project/image/upload/v1653127578/Images/r8fb9weiqlitnz8fddtg.png',
+                //     'user_id'=>$profile->user_id
+                // ]);
                 return response()->json([
                     'status'=>200,
                     'JWT'=>$token,
@@ -75,40 +74,61 @@ class AuthController extends Controller
                 }
             }else{
                 return response()->json([
-                    'status'=>400,
+                    'status'=>403,
                     'message'=> "number can't be empty"
                 ]);
             }
         } catch(\Exception $e){
             return response()->json([
-                'status'=>403,
+                'status'=>400,
                 'message'=> $e->getMessage()
             ]);
         }
 
     }
-     public function allUsers(){
-            try {
-            $user = User::all();
-            if($user != ""){
-                return response()->json([
-                    'status'=>'200',
-                    'users' =>$user
-                ]);
-            }else{
-                return response()->json([
-                    'status'=>'404',
-                    'users' =>"no user found"
-                ]);
-            }
-            } catch(\Exception $e){
-                return response()->json([
-                    'status'=>403,
-                    'message'=> $e->getMessage()
-                ]);
-            }
-    }
+    public function allUsers(){
+        try {
+            $users = DB::table('users')
+        ->join('profiles', 'users.user_id', '=', 'profiles.user_id')
+        ->join('image_uploads', 'users.user_id', '=', 'image_uploads.user_id')
+        ->select('users.*', 'profiles.name','profiles.phone','image_uploads.image_url')
+        ->get(); 
+        
+        if($users != ""){
+            return response()->json([
+                'status'=>200,
+                'users' =>$users
+            ],200);
+        }else{
+            return response()->json([
+                'status'=>404,
+                'users' =>"no user found"
+            ],404);
+        }
+        } catch(\Exception $e){
+            return response()->json([
+                'status'=>400,
+                'message'=> $e->getMessage()
+            ],400);
+        }
+}
 
+
+
+    public function head(){
+        try {
+           $head= $_SERVER['HTTP_AUTHORIZATION'];
+        return response()->json([
+                'status'=>200,
+                'message'=> $head
+            ]);
+        } catch(\Exception $e){
+            return response()->json([
+                'status'=>400,
+                'message'=> $e->getMessage()
+            ]);
+        }
+}
     // public function user_exist(Request $request){
     //         try {
     //         $user = User::where('phone', $request->phone)->first();

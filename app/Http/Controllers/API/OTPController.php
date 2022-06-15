@@ -12,10 +12,11 @@ class OTPController extends Controller
 {
     public function verifyOtp(Request $request){
         try {
-
-           $user = User::where('JWT', $request->JWT)->first();
+           $JWT= $_SERVER['HTTP_AUTHORIZATION'];
+            if($JWT != ""){
+           $user = User::where('JWT', $JWT)->first();
             if(isset($user->user_id)){
-
+                if($request->OTP != ""){
                 $OTP = User::where('OTP', $request->OTP)->first();
                 if(isset($OTP)){
                     return response()->json([
@@ -28,14 +29,25 @@ class OTPController extends Controller
                         'message' =>"Invalid OTP"
                     ]);
                 }
-              
+            }else{
+                return response()->json([
+                    'status'=>403,
+                    'message' =>"OTP can't be empty"
+                ]);
+            }
             }else{
                 return response()->json([
                     'status'=>401,
                     'message' =>"Invalid Token"
                 ]);
             }
-        } catch(\Exception $e){
+        }else{
+            return response()->json([
+                'status'=>403,
+                'message' =>"Token can't be empty"
+            ]);
+        }
+    } catch(\Exception $e){
             return response()->json([
                 'status'=>400,
                 'message'=> $e->getMessage()
@@ -43,9 +55,13 @@ class OTPController extends Controller
         }
         
     }
+
+    
     public function resendOTP(Request $request){
         try {
-            $user = User::where('JWT', $request->JWT)->first();
+            $JWT= $_SERVER['HTTP_AUTHORIZATION'];
+            if($JWT != ""){
+           $user = User::where('JWT', $JWT)->first();
             if(isset($user->user_id)){
                 $OTP = random_int(1000, 9999);
                 $account_sid = env('TWILIO_SID');
@@ -70,6 +86,12 @@ class OTPController extends Controller
                     'message' =>"Invalid token"
                 ]);
             }
+        }else{
+            return response()->json([
+                'status'=>403,
+                'message' =>"Token can't be empty"
+            ]);
+        }
         } catch(\Exception $e){
             return response()->json([
                 'status'=>400,
@@ -78,6 +100,8 @@ class OTPController extends Controller
         }
         
     }
+
+
     public function authOtp(Request $request){
         try {
 

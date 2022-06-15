@@ -17,9 +17,9 @@ class UppController extends Controller
             $allowedImages = ['image/jpeg','image/gif','image/png'];
             $allowedVideos = ['video/mp4','video/mpeg'];
 
-          
-
-            $user = User::where('JWT', $request->JWT)->first();
+            $JWT= $_SERVER['HTTP_AUTHORIZATION'];
+            if($JWT != ""){
+           $user = User::where('JWT', $JWT)->first();
             if(isset($user->user_id)){
             $profile = Profile::where('user_id', $user->user_id)->first();
             if($request->file('file') != ""){
@@ -28,28 +28,51 @@ class UppController extends Controller
                         if($request->time != ""){   
                             $contentType = $request->file('file')->getClientMimeType();
                             if(in_array($contentType, $allowedImages) ){
+                                // ----------------------------image/video upload on AWS -------------------------------------------------
                                 $file= $request->file('file');
                                 $filename=$file->getClientOriginalName();
                                 $filename= time().'.'.$filename;
                                 $path =  Storage::disk('s3')->put('alarm/alarm_files', $request->file('file'));
                                 $url='https://alex-app.s3.amazonaws.com/'.$path;
+
+                                // ----------------------------ringtone upload on AWS -------------------------------------------------
+                                $ringtone= $request->file('ringtone');
+                                $tune=$ringtone->getClientOriginalName();
+                                $tune= time().'.'.$tune;
+                                $tune_path =  Storage::disk('s3')->put('alarm/alarm_ringtones', $request->file('ringtone'));
+                                $ringurl='https://alex-app.s3.amazonaws.com/'.$tune_path;
+
+                                        Alarm::create([
+                                            "alarm_time"=>$request->time,
+                                            "user"=>$profile->name,
+                                            "user_id"=>$request->upp_user,
+                                            "type"=>"upp alarm",
+                                            "file"=>$url,
+                                            "ringtone"=>$ringurl
+                                        ]); 
+
                                     return response()->json([
                                         "status"=>200,
-                                        "message"=>'this is image',
-                                        "image"=>$url
+                                        "message"=>'Upp Alarm has been set'
                                     ]);
                             }elseif(in_array($contentType, $allowedVideos) ){
-                                $file= $request->file('file');
-                                $filename=$file->getClientOriginalName();
-                                $filename= time().'.'.$filename;
-                                $path =  Storage::disk('s3')->put('alarm/alarm_files', $request->file('file'));
-                                $url='https://alex-app.s3.amazonaws.com/'.$path;
+                                $videofile= $request->file('file');
+                                $videoname=$videofile->getClientOriginalName();
+                                $videoname= time().'.'.$videoname;
+                                $videopath =  Storage::disk('s3')->put('alarm/alarm_files', $request->file('file'));
+                                $videourl='https://alex-app.s3.amazonaws.com/'.$videopath;
 
+                                Alarm::create([
+                                    "alarm_time"=>$request->time,
+                                    "user"=>$profile->name,
+                                    "user_id"=>$request->upp_user,
+                                    "type"=>"upp alarm",
+                                    "file"=>$videourl,
+                                ]); 
 
                                     return response()->json([
                                         "status"=>200,
-                                        "message"=>'this is video ',
-                                        "video"=>$url
+                                        "message"=>'Upp Alarm has been set'
                                     ]);
                             }else{
                                     return response()->json([
@@ -87,7 +110,12 @@ class UppController extends Controller
                     "message"=>"Invalid Token"
                 ]);
             }
-           
+        } else{
+            return response()->json([
+                "status"=>403,
+                "message"=>"Token can't be empty"
+            ]);
+        }
         } catch(\Exception $e){
             return response()->json([
                 'status'=>400,
@@ -96,10 +124,5 @@ class UppController extends Controller
         }
     }
 }
-// curl --location --request PUT 'http://127.0.0.1:5000/auth/signup' \
-// --header 'Content-Type: application/json' \
-// --data-raw '{
-//     "email": "testing1234@test.com",
-//     "password": "1234567"
-// }
+
 

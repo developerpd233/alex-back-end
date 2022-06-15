@@ -17,20 +17,25 @@ Route::post('user_exist', [AuthController::class, 'user_exist']);
 Route::post('image_update', [ImageController::class, 'image_update']);
 Route::post('image_upload', [ImageController::class, 'image_upload']);
 
-Route::post('update_profile', [ProfileController::class, 'update_profile']);
-Route::post('get_profile', [ProfileController::class, 'get_profile']);
+Route::put('update_profile', [ProfileController::class, 'update_profile']);
+Route::get('get_profile', [ProfileController::class, 'get_profile']);
 
 
 Route::post('authOtp', [OTPController::class, 'authOtp']);
 Route::post('verifyOtp', [OTPController::class, 'verifyOtp']);
-Route::post('resendOTP', [OTPController::class, 'resendOTP']);
+Route::put('resendOTP', [OTPController::class, 'resendOTP']);
 
 Route::post('setAlarm', [AlarmController::class, 'setAlarm']);
-Route::post('getAlarm', [AlarmController::class, 'getAlarm']);
+Route::get('getAlarm', [AlarmController::class, 'getAlarm']);
 Route::get('AllRingtone', [AlarmController::class, 'AllRingtone']);
+Route::put('update_alarm', [AlarmController::class, 'update_alarm']);
+Route::delete('delete_alarm', [AlarmController::class, 'delete_alarm']);
+
 
 
 Route::post('UppAlarm', [UppController::class, 'UppAlarm']);
+
+Route::post('head', [AuthController::class, 'head']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();

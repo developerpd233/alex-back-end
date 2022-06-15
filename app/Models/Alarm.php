@@ -20,6 +20,7 @@ class Alarm extends Model
        'file',
        'user',
        'user_id',
-       'ringtone'
+       'ringtone',
+       'type'
    ];
 }
