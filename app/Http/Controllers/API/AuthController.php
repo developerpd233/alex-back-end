@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Models\Profile;
 use App\Models\Image_upload;
 use Twilio\Rest\Client;
+use Illuminate\Support\Facades\DB;
+
 
 
 class AuthController extends Controller
@@ -87,40 +89,42 @@ class AuthController extends Controller
 
     }
     public function allUsers(){
-        try {
-            $users = DB::table('users')
-        ->join('profiles', 'users.user_id', '=', 'profiles.user_id')
-        ->join('image_uploads', 'users.user_id', '=', 'image_uploads.user_id')
-        ->select('users.*', 'profiles.name','profiles.phone','image_uploads.image_url')
-        ->get(); 
-        
-        if($users != ""){
-            return response()->json([
-                'status'=>200,
-                'users' =>$users
-            ],200);
-        }else{
-            return response()->json([
-                'status'=>404,
-                'users' =>"no user found"
-            ],404);
-        }
-        } catch(\Exception $e){
-            return response()->json([
-                'status'=>400,
-                'message'=> $e->getMessage()
-            ],400);
-        }
-}
+            try {
+                $users = DB::table('users')
+            ->join('profiles', 'users.user_id', '=', 'profiles.user_id')
+            ->join('image_uploads', 'users.user_id', '=', 'image_uploads.user_id')
+            ->select('users.*', 'profiles.name','profiles.phone','image_uploads.image_url')
+            ->get(); 
+            
+            if($users != ""){
+                return response()->json([
+                    'status'=>200,
+                    'users' =>$users
+                ],200);
+            }else{
+                return response()->json([
+                    'status'=>404,
+                    'users' =>"no user found"
+                ],404);
+            }
+            } catch(\Exception $e){
+                return response()->json([
+                    'status'=>400,
+                    'message'=> $e->getMessage()
+                ],400);
+            }
+    }
 
 
-
-    public function head(){
+    public function head(Request $request){
         try {
            $head= $_SERVER['HTTP_AUTHORIZATION'];
+            $array =$request->ab;
+            $array1=count($array);
         return response()->json([
                 'status'=>200,
-                'message'=> $head
+                'message'=> $head,
+                "array"=>$array1."".$request->ab[0]
             ]);
         } catch(\Exception $e){
             return response()->json([

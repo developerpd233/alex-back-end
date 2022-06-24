@@ -296,5 +296,36 @@ class AlarmController extends Controller
             ]);
         }
     }
+    public function update_status(Request $request){
+        try{
+            if($request->alarm_id != ""){
+            $getAlarm=Alarm::where('alarm_id', $request->alarm_id)->first();
+                if(isset($getAlarm->alarm_id)){
+                    Alarm::where('alarm_id', $request->alarm_id)->update([
+                        'status' => "false"
+                    ]);
+                    return response()->json([
+                        'status'=>200,
+                        'message'=> "Alarm has been updated"
+                    ],200);
+                }else{
+                    return response()->json([
+                        'status'=>403,
+                        'message'=> "Requested alarm doesn't exists"
+                    ],403);
+                }
+            }else{
+                return response()->json([
+                    'status'=>403,
+                    'message'=> "Alarm id should be provided"
+                ],403);
+            }
+        } catch(\Exception $e){
+            return response()->json([
+                'status'=>400,
+                'message'=> $e->getMessage()
+            ],400);
+        }
+    }
 
 }

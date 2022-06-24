@@ -30,6 +30,7 @@ Route::get('getAlarm', [AlarmController::class, 'getAlarm']);
 Route::get('AllRingtone', [AlarmController::class, 'AllRingtone']);
 Route::put('update_alarm', [AlarmController::class, 'update_alarm']);
 Route::delete('delete_alarm', [AlarmController::class, 'delete_alarm']);
+Route::post('update_status', [AlarmController::class, 'update_status']);
 
 
 
